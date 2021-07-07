@@ -1,0 +1,246 @@
+---
+title: " Tours for the dynamic visualization of high-dimensional data"
+subtitle: "Rencontres R 2021"
+author: "Ursula Laa"
+output:
+  xaringan::moon_reader:
+    css: 
+      - "kunoichi"
+      - "ninjutsu"
+      - "assets/monash-fonts.css"
+    lib_dir: libs
+    seal: false
+    nature:
+      highlightStyle: github
+      ratio: '16:9'
+      highlightLines: true
+      countIncrementalSlides: false
+      beforeInit: ["libs/jquery/jquery.min.js", "libs/slides.js"]
+      slideNumberFormat: "%current%" 
+---
+layout: false
+class: split-75
+background-image: url("plots/title_slide_bkg.png")
+background-position: center
+background-size: contain
+
+<style type="text/css">
+.remark-slide-content{
+font-size: 30px;
+
+}
+code.r{
+  font-size: 24px;
+}
+
+</style>
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE, width = 120)
+library(tidyverse)
+library(knitr)
+library(tourr)
+library(kableExtra)
+library(htmltools)
+opts_chunk$set(
+  echo = TRUE, warning = FALSE, message = FALSE, comment = "#>",
+  fig.path = 'figure/', cache.path = 'cache/', fig.align = 'center',
+  fig.width = 12, fig.height = 4, fig.show = 'hold',
+  cache = FALSE, external = TRUE, dev = 'png', dev.args = list(bg = "transparent")
+)
+mp4_vid <- function(src, width){
+  HTML(
+    paste0(
+      '<video width="', width, '" loop autoplay>
+        <source src="', src, '" type="video/mp4">
+      </video>'
+    )
+  )
+}
+```
+
+
+```{css, echo=FALSE}
+/* custom.css */
+:root{
+  --main-color1: #509e2f;
+  --main-color2: #bcbddc;
+  --main-color3: #efedf5;
+  --main-color4: #9DDAE5;
+  --text-color3: black;
+  --text-color4: #505050;
+  --code-inline-color: #4e5054;
+  --link-color: #006CAB;
+}
+.large { font-size: 150% }
+.largeish { font-size: 120% }
+.summarystyle { font-size: 150%;
+  line-height:150%;}
+.my-gray {color: #606060!important; }
+.tiny{ font-size: 25%}
+```
+
+
+.column[.content[
+
+<br>
+
+## ** Tours for the dynamic visualization of high-dimensional data**
+
+.my-gray[
+.large[**Ursula Laa**]
+
+.largeish[ Institute of Statistics <br>
+University of Natural Resources and Life Sciences
+]
+]
+
+Rencontres R 2021
+
+]]
+
+.column[.top_abs.content[
+<img src="plots/Boku-wien.png" width="60%">
+]]
+
+---
+
+<br>
+
+This talk is based on the recent review paper
+
+<br>
+
+.center[<img src="plots/reviewpaper.png" width="100%">]
+
+<br>
+
+with preprint available from https://arxiv.org/abs/2104.08016
+
+---
+# Dimensionality of data
+
+When working with *numeric* variables we imagine the data to live in a **Euclidean space** where each *variable* is mapped onto one *axis* spanning the space. Thus, the dimensionality of this space is determined by the number of variables in the data, with each variable adding a new *orthogonal* direction.
+
+.center[<img src="plots/cubes.png" width="100%">]
+
+
+---
+# How can we visualize high-dimensional data?
+
+With up to three variables we can directly map the abstract data space onto our visualization, for example mapping two variables onto the x and y axis for a scatter plot display.
+
+In more than three dimensions we need to find a way of mapping the high-dimensional space onto something that we can draw on our 2D screens.
+
+--
+
+- Dimension reduction
+  + Linear projections (scatter plot matrix, PCA, LDA)
+  + Non-linear dimension reduction (MDS, t-SNE)
+- Parallel coordinate plots
+- **Tour methods**
+
+---
+# The grand tour and hypercubes
+
+Animation of 3D, 4D and 6 or 7 D cubes
+
+---
+# Grand tour - Notation
+
+We start from our data matrix $X_{n\times p}$, with $p$ variables and $n$ observations, and each view shows the data projected into a $d$-dimensional space (most commonly $d=2$ for a scatter plot display) defined by the projection matrix $A_{p\times d}$. The projected data is denoted $Y = X\cdot A$.
+
+We need three components to generate a tour:
+
+- selection method for target planes $A$
+- interpolation method to smoothly rotate the view from the current plane towards the selected target
+- display method to draw the projected data $Y$
+
+---
+# Tour path
+
+<img src="plots/tour_path.png" width="80%">
+
+---
+# Implementation in R
+
+All three components (with various options) have been implemented in `R` in the `tourr` package.
+
+To get started you can have a look at the [vignette](https://cran.r-project.org/web/packages/tourr/vignettes/tourr.html).
+
+The main function is called `animate`, by default it will show a *grand tour* with 2D projections in a scatter plot display.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, eval=FALSE}
+library(tourr)
+f <- flea[, 1:6]
+animate(f)
+```
+
+---
+class: split-40
+
+.column.content[
+
+<br>
+
+# Implementation in R
+
+<br>
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, eval=FALSE}
+animate(f,
+        tour_path = grand_tour(d = 2),
+        display = display_xy()
+        )
+```
+]
+
+.column.content[
+<img src="plots/flea.gif" width = "90%"/>
+]
+
+---
+# Finding targets
+
+In the *grand tour* the target planes are selected randomly from all possible projections. This works well for getting an overview of data as long as $p$ is not too large. Other methods:
+
+- `guided_tour` selects targets that optimize a *projection pursuit index*: we define a measure that indicates the *interestingness* of each projection and only select planes with increasing interestingness along the tour path
+- `little_tour` selects axis-parallel projections as targets
+- `local_tour` explores a small neighborhood around a selected projection
+- `planned_tour` interpolates between a supplied set of target planes
+
+---
+# Guided tour example
+
+holes index on flea data
+
+
+---
+# Different displays
+
+show 1D density display, mapping to color, grouped display
+
+---
+# New displays for large data
+
+slice display and sage display
+
+one example for each of those
+
+
+---
+# Some applications
+
+PDFsense examples
+Mouse data example
+Liminal?
+
+---
+# Summary
+
+- Tour methods can visualize high-dimensional data and reveal multivariate structure and outliers, and help us understand grouping
+- The `tourr` package includes different methods for basis selection, an algorithm for geodesic interpolation and many display functions
+- Since we rely on linear projections, tour displays are straightforward to interpret
+- Tours can be used as a complementary method together with non-linear dimension reduction
+- These methods can benefit from interactive interfaces, some recent efforts are available in `R` packages: `liminal`, `spinifex` 
+
