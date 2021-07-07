@@ -143,7 +143,46 @@ In more than three dimensions we need to find a way of mapping the high-dimensio
 ---
 # The grand tour and hypercubes
 
-Animation of 3D, 4D and 6 or 7 D cubes
+```{r, echo=FALSE, warning=FALSE, message=FALSE, eval=F}
+library(tourr)
+
+set.seed(2020)
+c4 <- geozoo::cube.iterate(4)
+render_gif(c4$points, grand_tour(), display = display_xy(edges = c4$edges, axes = "off"),
+            gif_file = "plots/c4.gif")
+
+c6 <- geozoo::cube.iterate(6)
+render_gif(c6$points, grand_tour(), display = display_xy(edges = c6$edges, axes = "off"),
+            gif_file = "plots/c6.gif")
+
+c3 <- geozoo::cube.iterate(3)
+render_gif(c3$points, grand_tour(), display = display_xy(edges = c3$edges, axes = "off"),
+            gif_file = "plots/c3.gif")
+
+```
+
+<br>
+
+.center[
+<div >
+    <div style="width: 33%; float: left">
+        <b> 3D </b>
+        <a href="">
+<img src="plots/c3.gif" width = "90%"/>
+        </a>
+    </div>
+        <div style="width: 33%; float: left">
+       <b>4D</b>
+        <a href="">
+<img src="plots/c4.gif" width = "90%" />        </a>
+    </div>
+    <div style="width: 33%; float: left">
+        <b>6D</b>
+        <a href="">
+<img src="plots/c6.gif" width = "90%"/>        </a>
+    </div>
+    </div>
+]
 
 ---
 # Grand tour - Notation
@@ -210,22 +249,198 @@ In the *grand tour* the target planes are selected randomly from all possible pr
 - `planned_tour` interpolates between a supplied set of target planes
 
 ---
-# Guided tour example
+class: split-40
 
-holes index on flea data
+.column.content[
+
+<br>
+
+# Guided tour on flea data
+
+<br>
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, eval=FALSE}
+set.seed(2021)
+animate(f,
+        tour_path = guided_tour(holes()),
+        display = display_xy()
+        )
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, eval=FALSE}
+set.seed(2021)
+animation::saveGIF(
+  animate(f,
+        tour_path = guided_tour(holes()),
+        display = display_xy()
+        ),  movie.name = "plots/flea_holes.gif")
+
+```
+
+]
+
+.column.content[
+<img src="plots/flea_holes.gif" width = "90%"/>
+]
 
 
 ---
 # Different displays
 
-show 1D density display, mapping to color, grouped display
+- When $d=1$ we can use `display_dist` to show a density plot or a histogram. In this case the projection matrix can be given as a bar chart showing the size and direction of how each variable contributes to the current projection.
+- When $d=2$ we typically use `display_xy` to show a scatter plot of the projected points. We can extend the display by connecting points via edges (as in the cube examples) or by mapping groups onto color.
+- We can also use `display_groupxy` to facet by a grouping variable.
+- For larger values of $d$ we can use e.g. `display_scatmat` or `display_pcp`
+
+---
+class: split-40
+
+.column.content[
+
+<br>
+
+# 1D
+
+<br>
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, eval=FALSE}
+animate(f,
+        tour_path = grand_tour(d = 1),
+        display = display_dist()
+        )
+```
+]
+
+.column.content[
+<img src="plots/flea_1D.gif" width = "90%"/>
+]
+
+---
+class: split-40
+
+.column.content[
+
+<br>
+
+# Mapping groups to color
+
+<br>
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, eval=FALSE}
+animate(f,
+        tour_path = grand_tour(d = 2),
+        display = display_xy(
+          col = flea$species
+          )
+        )
+```
+]
+
+.column.content[
+<img src="plots/flea_col.gif" width = "90%"/>
+]
+
+---
+class: split-40
+
+.column.content[
+
+<br>
+
+# Facetting
+
+<br>
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, eval=FALSE}
+animate(f,
+        tour_path = grand_tour(d = 2),
+        display = display_groupxy(
+          group_by = flea$species,
+          col = flea$species
+          )
+        )
+```
+]
+
+.column.content[
+<img src="plots/flea_gr.gif" width = "90%"/>
+]
 
 ---
 # New displays for large data
 
-slice display and sage display
+The standard displays are however limited in the case of **large data**:
 
-one example for each of those
+- Large number of **observations**: overplotting can hide features, especially in the case of concave distributions.
+- Large number of **variables**: projected data points tend to fall close to the center (crowding problem)
+
+We have introduced new displays that can address these issues: the **slice tour** highlights points based on a sectioning condition and works well with large $n$ (number of observations). The **sage tour** adjusts resolution based on the distance from the center and corrects for piling effects when $p$ is large.
+
+---
+# The slice tour display
+
+For each projection we also use information from the orthogonal space to highlight points close to the centered projection plane. This allows us to see local structures and reveal concave features (e.g. hollowness).
+
+.center[<img src="plots/slice.png" width="60%">]
+
+---
+# Slice tour of geometric shapes
+
+We can combine the slice display with a grand tour to gain intuition about a surface.
+
+
+.center[
+<div >
+    <div style="width: 33%; float: left">
+        <b> 3D sphere </b>
+        <a href="">
+<img src="plots/sphere-3-anchored.gif" width = "90%"/>
+        </a>
+    </div>
+        <div style="width: 33%; float: left">
+       <b>4D torus</b>
+        <a href="">
+<img src="plots/torus-4-centered.gif" width = "90%" />        </a>
+    </div>
+    <div style="width: 33%; float: left">
+        <b>Roman surface</b>
+        <a href="">
+<img src="plots/roman-surface.gif" width = "90%"/>        </a>
+    </div>
+    </div>
+]
+
+---
+# Sage tour
+
+The sage display transforms the **radius** (i.e. the distance from the center) of all projected data points such that equal volume in the high-dimensional space gets projected onto equal area in the two-dimensional plane.
+
+Without any transformation the radial distribution of the volume and projected volume of a hypersphere are very different.
+
+
+.center[
+  <img src="plots/cdf-1.png" width = "75%" />
+]
+
+---
+# Sage tour
+
+The sage display transforms the **radius** (i.e. the distance from the center) of all projected data points such that equal volume in the high-dimensional space gets projected onto equal area in the two-dimensional plane.
+
+We correct for this difference via the radial transformation.
+
+
+.center[
+  <img src="plots/circles-1.png" width = "95%" />
+]
+
+---
+# Pollen data
+
+We can use the sage display to better resolve small features near the center of a distribution.
+
+<img src="plots/pollen_sage.gif" width="290"/> <img src="plots/pollen_sage_R1.gif" width="290"/> <img src="plots/pollen_sage_gam20.gif" width="290"/>
+
 
 
 ---
