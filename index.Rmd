@@ -446,9 +446,24 @@ We can use the sage display to better resolve small features near the center of 
 ---
 # Some applications
 
-PDFsense examples
-Mouse data example
-Liminal?
+Tours are especially useful for understanding shapes and grouping in high dimensions, and to find interesting views that can reveal features in the data (for example non-linear dependence or multivariate outliers).
+
+Some examples I have worked on:
+
+- grouping of particle physics experiments based on what they tell us about the proton
+- understanding the shape of posterior distributions when describing gravitational wave events
+- visualizing (non-linear) decision surfaces of machine learning models
+- understanding and diagnosing clustering in high-dimensional spaces
+
+---
+# PDFSense data
+
+<img src="plots/allcenter.gif" width="450"/> <img src="plots/jetCluster.gif" width="450"/> 
+
+---
+# Clustering and sage display
+
+<img src="plots/mouse_grand_2c.gif" width="450"/> <img src="plots/mouse_sage_2c_gam3.gif" width="450"/> 
 
 ---
 # Summary
